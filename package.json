@@ -1,0 +1,26 @@
+{
+  "name": "@local/dsh-background",
+  "version": "2.0.1",
+  "private": true,
+  "description": "壁纸插件：默认深色空白背景，可在侧栏「壁纸」页上传自己的图片并调整位置、玻璃不透明度、模糊与适应方式，实时生效并保存在本机。/ Wallpaper bundle: dark blank background by default; upload a picture and tune position/opacity/blur/fit live, persisted locally.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  }
+}

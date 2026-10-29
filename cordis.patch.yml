@@ -1,0 +1,6 @@
+# Background Map bundle: one Host row exposing the plugin root over the
+# authenticated /api channel; the Client half paints the wallpaper layer and
+# the settings panel.
+- insert:
+    - id: background
+      name: '@local/dsh-background'
