@@ -116,10 +116,11 @@ window.__ModuleLoader__.load({
 
 		/**
 		 * Styles for the settings panel, the sidebar entry, and the miniature —
-		 * owned chrome only, applied whenever this plugin is mounted and removed
-		 * again on dispose. The wallpaper layers themselves are declared
-		 * separately and injected only while a picture is set, so an idle plugin
-		 * still leaves the document fully stock.
+		 * applied whenever this plugin is mounted and removed again on dispose.
+		 * One rule deliberately reaches past this plugin's own chrome: the stock
+		 * content rounding is squared in every state, picture or not. The
+		 * wallpaper layers themselves are declared separately and injected only
+		 * while a picture is set, so an idle plugin leaves everything else stock.
 		 */
 		const PANEL_CSS = [
 			'.dshBgPage{height:100%;min-height:0;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary)}',
@@ -517,11 +518,31 @@ window.__ModuleLoader__.load({
 			React.useEffect(() => {
 				const update = () => setGeo(measureShell());
 				window.addEventListener('resize', update);
-				const sidebar = document.querySelector('.BynINW_sidebarCol');
-				const observer = sidebar === null ? null : new ResizeObserver(update);
-				if (observer !== null) observer.observe(sidebar);
+				let observer = null;
+				let observed = null;
+				/* Resolve the sidebar through the hashed-class helper — the mangled
+				   prefix changes per build, so a literal class would silently die.
+				   ResizeObserver fires once on observe, so attaching measures too. */
+				const attach = () => {
+					const shell = resolveShellClasses();
+					const sidebar = shell === null ? null : document.querySelector(`.${shell.sidebar}`);
+					if (sidebar === null) return;
+					if (observer !== null) observer.disconnect();
+					observer = new ResizeObserver(update);
+					observer.observe(sidebar);
+					observed = sidebar;
+				};
+				attach();
+				/* The shell may mount after this panel opens, and a hot reload can
+				   swap the element: re-resolve until one attaches, and again whenever
+				   the observed element leaves the document. */
+				const retry = window.setInterval(() => {
+					if (observed !== null && observed.isConnected) return;
+					attach();
+				}, 1000);
 				return () => {
 					window.removeEventListener('resize', update);
+					window.clearInterval(retry);
 					if (observer !== null) observer.disconnect();
 				};
 			}, []);
@@ -657,7 +678,11 @@ window.__ModuleLoader__.load({
 							return;
 						}
 						setImage(dataUrl);
-						applyRuntime(settings, dataUrl);
+						/* Re-read the persisted record instead of this render's closure:
+						   a slider drag while the encode was in flight has already saved
+						   newer values, and the stale closure would roll the runtime
+						   variables back while the panel shows the new ones. */
+						applyRuntime(loadSettings(), dataUrl);
 					})
 					.catch((cause) => {
 						setError(cause instanceof Error ? cause.message : String(cause));
