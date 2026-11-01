@@ -32,6 +32,11 @@ DeepSeek Harness 壁纸插件。**初始状态什么都不做**——不画任�
     （保持官方默认不透明）。
   - `body` 与 AppFrame 三个结构层（哈希类名运行时从 `ui-layout` 样式表解析）
     背景清零，避免多层玻璃叠加。
+  - 右侧栏玻璃：dockkit 停靠面板自身画的是 `--dsw-alias-bg-base`（已被置
+    transparent），否则右栏会以无玻璃的裸壁纸呈现、与中间有色调层的区域形成
+    反差。按稳定 data 属性（`data-rightbar-col` 内的 `data-dockkit-pane` /
+    `data-dockkit-empty`）把右栏面板并入主区域色调层，打开右侧栏不再改变
+    背景观感；右栏面板的圆角同样置直角。
   - 一条有意的全局规则：主区域容器（`_centerCol`，运行时解析哈希）始终直角，
     覆盖原生 Windows 内容圆角——这是唯一在未设图片时也生效的样式。
   - 在 `main` 槽位注册「壁纸设置」面板，在 `sidebar.footer.action` 注册入口

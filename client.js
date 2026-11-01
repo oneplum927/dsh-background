@@ -312,6 +312,22 @@ window.__ModuleLoader__.load({
 					`body:not([data-ds-dark-theme]) ${ctr}{background:rgb(250 250 252 / var(${VAR_PREFIX}alpha-main))!important}`,
 				);
 			}
+			/* The right sidebar's docked panes paint --dsw-alias-bg-base, which this
+			   plugin forces transparent — they would otherwise show the raw
+			   wallpaper with no glass while the center next to them is tinted, so
+			   opening the right sidebar would change how the background reads.
+			   Repaint the panes with the SAME main-area tint as the center column.
+			   Dockkit marks panes with stable data attributes (unlike hashed
+			   classes), and every dock lives inside the rightbar column, so the
+			   [data-rightbar-col] scope cannot leak into other surfaces. */
+			rules.push(
+				`[data-rightbar-col] [data-dockkit-pane],[data-rightbar-col] [data-dockkit-empty]{background:rgb(20 20 22 / var(${VAR_PREFIX}alpha-main))!important}`,
+				`body:not([data-ds-dark-theme]) [data-rightbar-col] [data-dockkit-pane],[data-rightbar-col] [data-dockkit-empty]{background:rgb(250 250 252 / var(${VAR_PREFIX}alpha-main))!important}`,
+				/* Same preference as the center column: with the pane now painting
+				   glass, the stock Windows fullscreen rounding would read as a
+				   notch over the wallpaper. */
+				`[data-rightbar-col] [data-dockkit-pane]{border-radius:0!important}`,
+			);
 			return rules.join('');
 		}
 
